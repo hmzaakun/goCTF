@@ -7,9 +7,21 @@ import (
     "net"
     "net/http"
     "sync"
+	"strings"
+	"strconv"
 )
+func extractLevel(s string) (string, error) {
+	prefix := "Level:"
+	if !strings.Contains(s, prefix) {
+		return "", fmt.Errorf("level not found")
+	}
+	level := strings.TrimSpace(strings.TrimPrefix(s, prefix))
+	return level, nil
+}
 
 func testPort(serverIP string, port int, wg *sync.WaitGroup) {
+	var levelStr string
+	var levelNum int
     defer wg.Done()
     address := fmt.Sprintf("%s:%d", serverIP, port)
 
@@ -66,6 +78,9 @@ func testPort(serverIP string, port int, wg *sync.WaitGroup) {
             defer respGetUserLevel.Body.Close()
             bodyGetUserLevel, _ := ioutil.ReadAll(respGetUserLevel.Body)
             fmt.Printf("Port %d accessible - POST Response for /getUserLevel: %s\n", port, bodyGetUserLevel)
+			levelStr,err = extractLevel(string(bodyGetUserLevel))
+			levelNum, err = strconv.Atoi(levelStr)
+			levelNum = levelNum + 3
         }
 
 		// Effectuer une requête HTTP POST pour /getUserPoints
@@ -79,23 +94,46 @@ func testPort(serverIP string, port int, wg *sync.WaitGroup) {
         }
 
 		// Effectuer une requête HTTP POST pour /iNeedAHint
-        iNeedAHintURL := fmt.Sprintf("http://%s:%d/iNeedAHint", serverIP, port)
-        iNeedAHintJsonStr := []byte(`{"User": "Hamza", "secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce"}`)
-        respINeedAHint, err := http.Post(iNeedAHintURL, "application/json", bytes.NewBuffer(iNeedAHintJsonStr))
-        if err == nil {
-            defer respINeedAHint.Body.Close()
-            bodyINeedAHint, _ := ioutil.ReadAll(respINeedAHint.Body)
-            fmt.Printf("Port %d accessible - POST Response for /iNeedAHint: %s\n", port, bodyINeedAHint)
-        }
+        // iNeedAHintURL := fmt.Sprintf("http://%s:%d/iNeedAHint", serverIP, port)
+        // iNeedAHintJsonStr := []byte(`{"User": "Hamza", "secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce"}`)
+        // respINeedAHint, err := http.Post(iNeedAHintURL, "application/json", bytes.NewBuffer(iNeedAHintJsonStr))
+        // if err == nil {
+        //     defer respINeedAHint.Body.Close()
+        //     bodyINeedAHint, _ := ioutil.ReadAll(respINeedAHint.Body)
+        //     fmt.Printf("Port %d accessible - POST Response for /iNeedAHint: %s\n", port, bodyINeedAHint)
+        // }
 
 		// Effectuer une requête HTTP POST pour /getChallenge
-        getChallengeURL := fmt.Sprintf("http://%s:%d/getUserChallenge", serverIP, port)
+        getChallengeURL := fmt.Sprintf("http://%s:%d/enterChallenge", serverIP, port)
         getChallengeJsonStr := []byte(`{"User": "Hamza", "secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce"}`)
         respGetChallenge, err := http.Post(getChallengeURL, "application/json", bytes.NewBuffer(getChallengeJsonStr))
         if err == nil {
             defer respGetChallenge.Body.Close()
             bodyGetChallenge, _ := ioutil.ReadAll(respGetChallenge.Body)
             fmt.Printf("Port %d accessible - POST Response for /getChallenge: %s\n", port, bodyGetChallenge)
+        }
+
+		// Effectuer une requête HTTP POST pour /submitSolution
+        submitSolutionURL := fmt.Sprintf("http://%s:%d/submitSolution", serverIP, port)
+        submitSolutionJsonStr := []byte(fmt.Sprintf(`{
+            "User": "Hamza",
+            "Secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce",
+            "Content": {
+                "Level": %d,
+                "Challenge": {
+                    "Username": "Hamza",
+                    "Secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce",
+                    "Points": 98
+                },
+                "Protocol": "MD5",
+                "SecretKey": "Pasting code from the Internet into production code is like chewing gum found in the street."
+            }
+        }`,levelNum))
+        respSubmitSolution, err := http.Post(submitSolutionURL, "application/json", bytes.NewBuffer(submitSolutionJsonStr))
+        if err == nil {
+            defer respSubmitSolution.Body.Close()
+            bodySubmitSolution, _ := ioutil.ReadAll(respSubmitSolution.Body)
+            fmt.Printf("Port %d accessible - POST Response for /submitSolution: %s\n", port, bodySubmitSolution)
         }
     }
 }
