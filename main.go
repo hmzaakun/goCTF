@@ -94,6 +94,7 @@ func testPort(serverIP string, port int, wg *sync.WaitGroup) {
         }
 
 		// Effectuer une requête HTTP POST pour /iNeedAHint
+	    //morceau commenté car cet appel fait perdre des points au user mais ca marche
         // iNeedAHintURL := fmt.Sprintf("http://%s:%d/iNeedAHint", serverIP, port)
         // iNeedAHintJsonStr := []byte(`{"User": "Hamza", "secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce"}`)
         // respINeedAHint, err := http.Post(iNeedAHintURL, "application/json", bytes.NewBuffer(iNeedAHintJsonStr))
@@ -103,7 +104,7 @@ func testPort(serverIP string, port int, wg *sync.WaitGroup) {
         //     fmt.Printf("Port %d accessible - POST Response for /iNeedAHint: %s\n", port, bodyINeedAHint)
         // }
 
-		// Effectuer une requête HTTP POST pour /getChallenge
+		// Effectuer une requête HTTP POST pour /enterChallenge
         getChallengeURL := fmt.Sprintf("http://%s:%d/enterChallenge", serverIP, port)
         getChallengeJsonStr := []byte(`{"User": "Hamza", "secret": "26ac05af275df37b36a23a75dfb701c48ecbdb6a5a578674c36274737864f4ce"}`)
         respGetChallenge, err := http.Post(getChallengeURL, "application/json", bytes.NewBuffer(getChallengeJsonStr))
