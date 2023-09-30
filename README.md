@@ -1,4 +1,4 @@
-# Partiel CTF Golang
+# Partiel CTF Golang :triangular_flag_on_post:
 
 Ce projet permet de résoudre le Capture The Flag (CTF) en utilisant Go. Le code présenté ici est conçu pour interagir avec l'API du serveur pour le CTF en effectuant des requêtes HTTP pour résoudre les différents défis proposés.
 
